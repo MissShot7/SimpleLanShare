@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<WindowsPackageType>None</WindowsPackageType>
+		<SelfContained>true</SelfContained>
+	</PropertyGroup>
     <PropertyGroup>
         <TargetFrameworks>net9.0;net9.0-windows;net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
@@ -13,6 +17,9 @@
             either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
         <!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
 
+		<!--<WindowsPackageType Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">None</WindowsPackageType> -->
+
+		<SatelliteResourceLanguages>en-us;cs-CZ</SatelliteResourceLanguages>
         <OutputType>Exe</OutputType>
         <RootNamespace>SimpleLANShare</RootNamespace>
         <UseMaui>true</UseMaui>
@@ -25,7 +32,7 @@
         <ApplicationTitle>CrossPlatformShare</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.crossplatformshare</ApplicationId>
+        <ApplicationId>com.MissShot7.SimpleLANShare</ApplicationId>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -49,6 +56,8 @@
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
         <PackageCertificateThumbprint>A58FD649B0B7E5637200DE717457824F87EEBD55</PackageCertificateThumbprint>
     </PropertyGroup>
+
+    
 
     <ItemGroup>
         <!-- App Icon -->
