@@ -2,6 +2,7 @@
 using CrossPlatformShare;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Net;
@@ -107,8 +108,9 @@ class ServerClass
             {
                 return;
             }
-
-            NCL($"Request: {request}");
+            IPEndPoint remoteIpEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
+            string ClientAdress = (client.Client.RemoteEndPoint as IPEndPoint).Address.ToString();
+            NCL($"Request: {request} from {ClientAdress}");
 
             // Parse the request for the file path
             string[] requestParts = request.Split(' ');
@@ -118,60 +120,59 @@ class ServerClass
             }
 
             string fileRequested = requestParts[1].TrimStart('/');
+            if (fileRequested.EndsWith("/")) { fileRequested.Substring(0, fileRequested.Length - 1); } //vymaže lomítko
             
-            if ((fileRequested.StartsWith("dsf/") || fileRequested.StartsWith("dsf")) && SpecificFilePath != null) //download specific file
-            {
-                if (File.Exists(SpecificFilePath))
-                {
-                    byte[] fileBytes = File.ReadAllBytes(SpecificFilePath);
-                    string responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
-                    writer.Write(responseHeader);
-                    writer.Flush();
-                    stream.Write(fileBytes, 0, fileBytes.Length);
-                }
-                else
-                {
-                    string responseHeader = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n";
-                    string responseBody = $"<html><body><h1>File Not Found</h1><p>The file {SpecificFilePath} could not be found.</p></body></html>";
-                    writer.Write(responseHeader);
-                    writer.Write(responseBody);
-                    writer.Flush();
-                }
-                
-                return;
-            }
 
             //--------------------------------------
-            if (requestParts[1].TrimStart('/') == "") 
+            string responseHeader;
+            string responseBody;
+            if (fileRequested == "dsf") //download specific file
+            {
+                byte[] fileBytes = File.ReadAllBytes(SpecificFilePath);
+                responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+                writer.Write(responseHeader);
+                writer.Flush();
+                stream.Write(fileBytes, 0, fileBytes.Length);
+
+                return;
+            }
+            else if (fileRequested == "") 
             {
                 // Generate html
-                string responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-                string responseBody = SimpleHTML("Server working :)", $"Current file is stored on: {SpecificFilePath}");
-
-                writer.Write(responseHeader);
-                writer.Write(responseBody);
-                writer.Flush();
-                return;
-            } else if (requestParts[1].TrimStart('/') == "GetFileName") //název souboru
+                responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+                string Serverurl = GetLocalIPAddress();
+                responseBody = SimpleHTML("Server working :)", $"Current file on host device is stored on: {SpecificFilePath} </br></br>" + 
+                    $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{Serverurl}/dsf</a> """+
+                    $"""</br> FileInfo link:  <a href="/GetFileInfo">{Serverurl}/GetFileInfo</a> """);
+            } else if (fileRequested == "GetFileInfo") //informace o souboru
             {
-                string responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
-                string responseBody = Path.GetFileName(SpecificFilePath) ?? "FileNotShared";
+                var fileInfo = new FileInfo(SpecificFilePath);
+                var fileDetails = new
+                {
+                    Name = fileInfo.Name,
+                    FullName = fileInfo.FullName,
+                    Extension = fileInfo.Extension,
+                    SizeInBytes = fileInfo.Length,
+                    CreationTime = fileInfo.CreationTime,
+                    LastAccessTime = fileInfo.LastAccessTime,
+                    LastWriteTime = fileInfo.LastWriteTime
+                };
+                string FIleInfoAsJSON = JsonConvert.SerializeObject(fileDetails, Formatting.Indented);
 
-                writer.Write(responseHeader);
-                writer.Write(responseBody);
-                writer.Flush();
-            }
-            //ostatní
-            else
+                responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+                responseBody = FIleInfoAsJSON ?? "Error";
+            } else //chyba
             {
-                string responseHeader = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\n\r\n";
-                //string responseBody = "<html><body><h1>Bad Request</h1><p>The URL must start with /downloadfile/.</p></body></html>";
-                string responseBody = SimpleHTML("Bad Request", "Doesn't exist");
-                writer.Write(responseHeader);
-                writer.Write(responseBody);
-                writer.Flush();
-                return;
+                responseHeader = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\n\r\n";
+                responseBody = SimpleHTML("Bad Request", "Doesn't exist");
             }
+            writer.Write(responseHeader);
+            writer.Write(responseBody);
+            writer.Flush();
+
+
+
+
             /*
             // Check if the request is for /downloadfile
             if (fileRequested == "downloadfile" || fileRequested == "downloadfile/")
@@ -225,7 +226,16 @@ class ServerClass
     }
     private static string SimpleHTML(string h1, string p, string title="server")
     {
-        string responseBody = $"<html><body><h1>{h1}</h1><p>{p}</p></body><title>{title}</title></html>";
+        string credits = $"""
+</br></br></br></br>
+<p style="text-align: left; font-family: Arial, sans-serif; font-size: 1.2em; line-height: 1.6; color: #333;">
+    <strong>SimpleLANShare</strong><br>
+    Download your copy of SimpleLANShare 
+    <a href="https://github.com/MissShot7/SimpleLANShare" style="color: #0066cc; text-decoration: none;">here</a><br>
+    <span style="font-style: italic;">created by MissShot7</span>
+</p>
+""";
+        string responseBody = $"<html><body><h1>{h1}</h1><p>{p}</p>{credits}</body><title>{title}</title></html>";
         return responseBody;
     }
 

@@ -39,7 +39,7 @@
                WidthRequest="300"
                ReturnType="Done"
         />
-            <Button Text="Browse"
+            <Button Text="Browse" x:Name="BrowseBtn"
                 HorizontalOptions="Center"
                 VerticalOptions="Center"
                 Clicked="UploadFileDialog" />
@@ -74,7 +74,7 @@
                     Clicked="DeleteIPhistory"/>
         </StackLayout>
         <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Center">
-            <Button Text="Recieve"
+            <Button Text="Recieve" x:Name="ReciveBtn"
          HorizontalOptions="Center"
          VerticalOptions="Center"
          Clicked="DownloadFromIP" />
@@ -94,20 +94,27 @@
             </Picker>
         </StackLayout>
 
+        <ProgressBar x:Name="DownloadProgress" Progress="0" ProgressColor="Orange" WidthRequest="350" />
 
         <ScrollView x:Name="ServerConsoleView"
                     Grid.Row="1"
-                    VerticalOptions="FillAndExpand"
-                    
                     >
             <StackLayout>
-                <Editor x:Name="ServerConsole" WidthRequest="350" HeightRequest="200" VerticalTextAlignment="Start" Placeholder="console" Text="{Binding ServerConsoleText}" 
-                        IsReadOnly="True"/>
+                <Editor x:Name="ServerConsole" WidthRequest="350" HeightRequest="155" VerticalTextAlignment="Start" Placeholder="console" Text="{Binding ServerConsoleText}" 
+                        IsReadOnly="True" />
 
-                                      <!-- More Label objects go here -->
+                <!-- More Label objects go here -->
             </StackLayout>
         </ScrollView>
-                
+        <Button Text="Clear Console"
+    HorizontalOptions="Center"
+    VerticalOptions="Center"
+    Clicked="ClearConsole"
+    Grid.Row="1" />
+
+
+
+
 
     </StackLayout>
     

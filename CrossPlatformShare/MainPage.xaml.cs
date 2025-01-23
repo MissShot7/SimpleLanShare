@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading;
 using Microsoft.Maui.Controls;
 using static System.Net.Mime.MediaTypeNames;
+using Newtonsoft.Json.Linq;
 
 namespace CrossPlatformShare
 {
@@ -19,13 +20,20 @@ namespace CrossPlatformShare
     {
 
         private List<string> ipAddresses = new List<string>();
+        private static readonly HttpClient client = new HttpClient()
+        {
+            Timeout = TimeSpan.FromSeconds(5) // Set the timeout here
+        };
 
         public void NCL(string txt) //new console log
         {
             //if (ConsoleEntry == null) { return; }
             //MainPage mp = new MainPage();
             //ConsoleEntry = mp.serverConsole;
-            ServerConsole.Text += txt + "\n";
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ServerConsole.Text += txt + "\n";
+            });
         }
 
         public MainPage()
@@ -38,20 +46,22 @@ namespace CrossPlatformShare
             
             //ServerClass.StartFileServer(); //"http://localhost:8080/"
 
-            // Get saved IP addresses from Preferences
+            //načte poslední IP
             var savedJson = Preferences.Get("IPlist", "[]");
             List<string> savedList = JsonConvert.DeserializeObject<List<string>>(savedJson);
             ipAddresses = ipPicker.Items.ToList();
             // Add saved IPs to the ipAddresses list
             foreach (string ip in savedList)
             {
-                if (!ipAddresses.Contains(ip))
+                if (!ipAddresses.Contains(ip) && IsValidIPv4(ip))
                 {
                     ipAddresses.Add(ip);
                 }
             }
             // Set the Picker's ItemsSource to the list
             ipPicker.ItemsSource = ipAddresses;
+            //Nastaví poslední vybraný soubor
+            ipPicker.SelectedItem = Preferences.Get("LastIPSelected", "custom");
             //napíše poslední soubor do FileUploadEntry
             FileUploadEntry.Text = Preferences.Get("LastFileUploaded", "");
             //SavePicker poslední hodnota
@@ -68,7 +78,7 @@ namespace CrossPlatformShare
         {
             await DisplayAlert("Credits", "Created by MissShot7 (https://github.com/MissShot7/) in 2025", "Continue");
         }
-        void StartLanSharing(object sender, EventArgs args)
+        async void StartLanSharing(object sender, EventArgs args)
         {
             //rozhodne akci
             Button button = (Button)sender;
@@ -81,12 +91,19 @@ namespace CrossPlatformShare
                     {
                         Preferences.Set("LastFileUploaded", FileUploadEntry.Text); //uloží poslední cestu
                         button.Text = "Stop";
+                        BrowseBtn.IsEnabled = false;
+                        FileUploadEntry.IsEnabled = false;
                     }
+                } else
+                {
+                    await DisplayAlert("Non Existent", "Path Doesn't exist", "OK");
                 }
             } else if (button.Text == "Stop")
             {
                 //ukončí server
                 button.Text = "Host";
+                BrowseBtn.IsEnabled = true;
+                FileUploadEntry.IsEnabled = true;
                 ServerClass.StopServer();
             }
         }
@@ -94,84 +111,221 @@ namespace CrossPlatformShare
         async void IPpickerChanged(object sender, EventArgs args) //ippicker
         {
             Picker p = (Picker)sender;
-
-            if (p.SelectedItem != null && p.SelectedItem.ToString() == "custom")
+            if (p.SelectedIndex != -1)
             {
-                string result = await DisplayPromptAsync("Enter IP", "Enter LAN IPV4 adress", keyboard: Keyboard.Numeric, maxLength: 15); //vlastní ip
-                if (result == "") { return; }
-                bool DontAdd = false;
-                foreach (string item in p.GetItemsAsArray())
+                if (p.SelectedItem.ToString() == "custom")
                 {
-                    if (item == result) { DontAdd = true; break; }
-                }
-                if (DontAdd == false) //přidá do preferences
-                {
-                    //p.Items.Add(result); //přidá do itemu
-                    ipAddresses.Add(result);
-                    ipPicker.ItemsSource = new List<string>();
-                    ipPicker.ItemsSource = ipAddresses;
-                    
+                    string result = await DisplayPromptAsync("Enter IP", "Enter LAN IPV4 adress", keyboard: Keyboard.Numeric, maxLength: 15); //vlastní ip
+                    if (!IsValidIPv4(result)) { NCL($"Invalid IP: {result}"); p.SelectedItem = null; return; }
+                    bool DontAdd = false;
+                    foreach (string item in p.GetItemsAsArray())
+                    {
+                        if (item == result) { DontAdd = true; break; }
+                    }
+                    if (DontAdd == false) //přidá do preferences
+                    {
+                        //p.Items.Add(result); //přidá do itemu
+                        ipAddresses.Add(result);
+                        ipPicker.ItemsSource = new List<string>();
+                        ipPicker.ItemsSource = ipAddresses;
 
-                    List<string> list = p.Items.ToList();
-                    list.Add(result);
-                    string json = JsonConvert.SerializeObject(list);
-                    Preferences.Set("IPlist", json);
+
+                        List<string> list = p.Items.ToList();
+                        list.Add(result);
+                        string json = JsonConvert.SerializeObject(list);
+                        Preferences.Set("IPlist", json);
+                    }
+                    p.SelectedItem = result;
                 }
-                p.SelectedItem = result;
+                //uloží vybranou možnost
+                Preferences.Set("LastIPSelected", p.SelectedItem.ToString() ?? "custom");
             }
         }
-        
+        bool IsValidIPv4(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+            string[] parts = input.Split('.');
+            if (parts.Length != 4)
+                return false;
+            foreach (string part in parts)
+            {
+                if (!int.TryParse(part, out int num) || num < 0 || num > 255)
+                    return false;
+            }
+            return true;
+        }
+        async Task<bool> IsServerOnlineAsync(string url)
+        {
+            NCL($"Attempting to connect to {url}");
+            try
+            {
+                // Send a GET request to the URL
+                HttpResponseMessage response = await client.GetAsync(url);
+                NCL($"{url} is online");
+
+                // If the status code is 200 (OK), the server is online
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception e)
+            {
+                // If any error occurs (timeout, network issue, etc.), return false (server is not reachable)
+                NCL($"Can't connect to: {url} ");
+                return false;
+            }
+        }
+
         async void DownloadFromIP(object sender, EventArgs args)
         {
             if (ipPicker.SelectedItem == null) { await DisplayAlert("Null", "You need to select IP", "OK"); return; }
             if (SavePicker.SelectedItem == null) { await DisplayAlert("Null", "You need to select Mode", "OK"); return; }
+            DownloadProgress.Progress = 0;
 
             string dip = ipPicker.SelectedItem.ToString();
             string port = Preferences.Get("SavedPort", "8008");
-            string adress = "http://" + dip + ":" + port;
+            string address = "http://" + dip + ":" + port;
 
-            using (var client = new WebClient())
+            
+            //jestli je soubor online
+            if (!await IsServerOnlineAsync(address)) { return; }
+            /*
+            //zjistí jméno souboru
+            string FileName;
+            HttpResponseMessage response = await client.GetAsync(address + "/GetFileName");
+            FileName = await response.Content.ReadAsStringAsync();
+            //zjistí velikost souboru
+            long FileSize = long.Parse(await client.GetStringAsync(address + "/GetFileSize"));*/
+
+            //zjistí informace ze serveru
+            string FileInfoJSON = await client.GetStringAsync(address + "/GetFileInfo");
+            var fileInfo = JObject.Parse(FileInfoJSON);
+            string FileName = fileInfo["Name"].ToString();
+            long FileSize = (long)fileInfo["SizeInBytes"];
+
+
+            string FullPath_auto = Path.Combine(GetDownlaodDir(), FileName);
+            string FullPath_custom = FullPath_auto;
+            bool UserSelectsFile = false;
+            //Manual
+            if (SavePicker.SelectedItem.ToString() == "Manual") { UserSelectsFile = true; }
+
+            else if (SavePicker.SelectedItem.ToString() == "FullAuto")
             {
-                string FileName = client.DownloadString(adress + "/GetFileName");
-                
-                
-                string FullPath_auto = Path.Combine(GetDownlaodDir(), FileName);
-                string FullPath_custom = FullPath_auto;
-                bool UserSelectsFile = false;
-                //Manual
-                if (SavePicker.SelectedItem.ToString() == "Manual") { UserSelectsFile = true; }
+                FullPath_custom = NextAvailableFilename(FullPath_custom);
+            } else if (SavePicker.SelectedItem.ToString() == "SemiAuto" && File.Exists(FullPath_auto))  
+            {
+                string action = await DisplayActionSheet("File already Exists", "Cancel", null, "Overwrite", "Custom name", "Auto name");
+                NCL("Action: " + action);
+                //akce
+                if (action == "cancel") { NCL("Canceled by user"); return; }
+                else if (action== "Overwrite") {} //pokračuje
+                else if (action=="Auto name") { FullPath_custom = NextAvailableFilename(FullPath_auto); }
 
-                else if (SavePicker.SelectedItem.ToString() == "FullAuto")
+                else if (action=="Custom name") 
                 {
-                    FullPath_custom = NextAvailableFilename(FullPath_custom);
-                } else if (SavePicker.SelectedItem.ToString() == "SemiAuto" && File.Exists(FullPath_auto))  
-                {
-                    string action = await DisplayActionSheet("File already Exists", "Cancel", null, "Overwrite", "Custom name", "Auto name");
-                    NCL("Action: " + action);
-                    //akce
-                    if (action == "cancel") { NCL("Canceled by user"); return; }
-                    else if (action== "Overwrite") {} //pokračuje
-                    else if (action=="Auto name") { FullPath_custom = NextAvailableFilename(FullPath_auto); }
+                    UserSelectsFile = true;
+                }
+            }
+            NCL("FileName: " + FileName);
 
-                    else if (action=="Custom name") 
+            //vypne tlačítko
+            ReciveBtn.IsEnabled = false;
+            ReciveBtn.Text = "Recieving";
+            //začne stahovací vlákno
+            Thread downloadThread = new Thread(dwnd_task);
+            downloadThread.Start();
+
+            async void dwnd_task()
+            {
+                string ConsoleDisplayPath;
+
+                var downloadFileUrl = address + "/dsf";
+                string savePath = UserSelectsFile ? Path.GetTempFileName() : FullPath_custom; // Determine file path based on user selection
+
+                // Assuming FileSize is known beforehand or obtained from headers
+                long totalBytesDownloaded = 0;
+
+                using (var client = new HttpClient())
+                using (var response = await client.GetAsync(downloadFileUrl, HttpCompletionOption.ResponseHeadersRead))
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                {
+                    var buffer = new byte[8192];
+                    int bytesRead;
+                    double progress = 0;
+
+                    Stopwatch sw = new Stopwatch();
+                    sw.Start();
+
+                    while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
-                        UserSelectsFile = true;
+                        // Write to file immediately
+                        await fileStream.WriteAsync(buffer, 0, bytesRead);
+
+                        // Update total bytes downloaded
+                        totalBytesDownloaded += bytesRead;
+
+                        // Update progress every 50ms
+                        if (sw.ElapsedMilliseconds >= 50)
+                        {
+                            sw.Restart();
+                            progress = (double)totalBytesDownloaded / FileSize;
+
+                            // Optional: Update the UI on the main thread
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                DownloadProgress.Progress = progress;
+                            });
+                        }
+                    }
+
+                    // Final progress update to ensure 100% is displayed
+                    progress = (double)totalBytesDownloaded / FileSize;
+
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        DownloadProgress.Progress = progress;
+                    });
+                }
+
+                if (UserSelectsFile)
+                {
+                    try
+                    {
+                        // User selects file, save to custom location
+                        var fileSaverResult = await FileSaver.Default.SaveAsync(FullPath_auto, new MemoryStream(File.ReadAllBytes(savePath))); // uživatel sám vybere
+                        ConsoleDisplayPath = fileSaverResult.ToString();
+                    } catch (OperationCanceledException)
+                    {
+                        // Handle the case when the user cancels the file save
+                        ConsoleDisplayPath = "File save was cancelled.";
+                        NCL("User cancelled the save operation.");
+                    } catch (Exception ex)
+                    {
+                        // Catch other exceptions (e.g., file access issues, permissions)
+                        ConsoleDisplayPath = "An error occurred while saving the file.";
+                        NCL($"Error: {ex.Message}");
+                    } finally
+                    {
+                        // Clean up temporary file, even if an error occurred
+                        File.Delete(savePath);
                     }
                 }
-                NCL("FileName: " + FileName);
-                if (UserSelectsFile) //vybírání
+                else
                 {
-                    var fileSaverResult = await FileSaver.Default.SaveAsync(FullPath_auto, new MemoryStream(client.DownloadData(adress + "/dsf"))); //uživatel sám vybere
-                    NCL("Downloading to " + fileSaverResult);
-                } else 
-                { 
-                    client.DownloadFile(adress + "/dsf", FullPath_custom); //do stažených souborů
-                    NCL("Downloading to " + FullPath_custom);
+                    // Direct download without user intervention
+                    ConsoleDisplayPath = FullPath_custom;
                 }
-                
-                
+                //konec (musí být spuštěn na hlavním vlákně)
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    NCL("File saved to " + ConsoleDisplayPath);
+                    //tlačítko
+                    ReciveBtn.IsEnabled = true;
+                    DownloadProgress.Progress = 1f;
+                    ReciveBtn.Text = "Recieve";
+                });
             }
-            NCL("Downloading done");
 
             string NextAvailableFilename(string path)
             {
@@ -237,6 +391,10 @@ namespace CrossPlatformShare
             {
                 // The user canceled or something went wrong
             }
+        }
+        void ClearConsole(object sender, EventArgs args)
+        {
+            ServerConsole.Text = string.Empty;
         }
         private static string GetDownlaodDir()
         {
@@ -311,4 +469,5 @@ namespace CrossPlatformShare
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+    
 }
