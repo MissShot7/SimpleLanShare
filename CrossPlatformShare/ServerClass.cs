@@ -4,11 +4,14 @@ using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using Newtonsoft.Json;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Windows.Input;
 using static System.Net.Mime.MediaTypeNames;
 
 
@@ -19,6 +22,7 @@ class ServerClass
     public static Editor ConsoleEntry;
     public static MainViewModel mvm;
     public static bool running = false;
+    private static string serverIP;
     //public 
     private static TcpListener tcpListener;
     static void NCL(string txt) //new console log
@@ -29,6 +33,11 @@ class ServerClass
     }
     public static bool StartFileServer(string specificFilePath = "none")
     {
+        serverIP = GetLocalIPAddress(); //lokální ip
+        if (serverIP == "Connecting_error") { NCL("Connection error, ensure your wifi is on"); return false; } //chyba s připojením
+
+        
+
         if (running == true) { return false; }
         //jestli soubor existuje
         if (!File.Exists(specificFilePath)) { NCL($"File '{specificFilePath}' doesn't exist. Not starting"); return false; }
@@ -42,15 +51,26 @@ class ServerClass
     }
     public static string GetLocalIPAddress()
     {
+        //jestli je připojen k internetu
+        
+
         string localIP;
         using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
         {
-            socket.Connect("8.8.8.8", 65530);
+            try
+            {
+                socket.Connect("8.8.8.8", 65530);
+            }
+            catch { return "Connecting_error"; }
+            
+            
+            
             IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
             localIP = endPoint.Address.ToString();
         }
         return localIP;
     }
+
     public static void StopServer()
     {
         running = false;
@@ -61,8 +81,7 @@ class ServerClass
     {
         //string serverIP = "192.168.1.207";
 
-        string serverIP = GetLocalIPAddress(); //lokálnní ip
-
+        
         //string serverIP = "169.254.173.202";
         int port = 8008;
         /*try*/
@@ -71,6 +90,7 @@ class ServerClass
             tcpListener.Start();
 
             NCL($"Server started on {serverIP}:{port}");
+            
 
             while (running)
             {
@@ -98,6 +118,7 @@ class ServerClass
 
     private static void HandleRequest(TcpClient client)
     {
+ 
         using (NetworkStream stream = client.GetStream())
         using (StreamReader reader = new StreamReader(stream))
         using (StreamWriter writer = new StreamWriter(stream))
@@ -140,10 +161,9 @@ class ServerClass
             {
                 // Generate html
                 responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-                string Serverurl = GetLocalIPAddress();
                 responseBody = SimpleHTML("Server working :)", $"Current file on host device is stored on: {SpecificFilePath} </br></br>" + 
-                    $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{Serverurl}/dsf</a> """+
-                    $"""</br> FileInfo link:  <a href="/GetFileInfo">{Serverurl}/GetFileInfo</a> """);
+                    $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{serverIP}/dsf</a> """+
+                    $"""</br> FileInfo link:  <a href="/GetFileInfo">{serverIP}/GetFileInfo</a> """);
             } else if (fileRequested == "GetFileInfo") //informace o souboru
             {
                 var fileInfo = new FileInfo(SpecificFilePath);
@@ -287,3 +307,4 @@ class ServerClass
 #endif
     }
 }
+

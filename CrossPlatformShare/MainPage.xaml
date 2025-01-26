@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-
+             
              x:Class="CrossPlatformShare.MainPage"
              Title="SimpleLanShare">
 
@@ -24,8 +24,8 @@
            VerticalOptions="Center"
            Grid.Column="0" />
             <!-- Button in the top-right corner -->
-            <Button Text="J"
-                    FontFamily="wingding"
+            <Button Text="☺"
+                    
                     FontSize="25"
                     Clicked="HappyClicked"
             HorizontalOptions="End"
@@ -96,16 +96,12 @@
 
         <ProgressBar x:Name="DownloadProgress" Progress="0" ProgressColor="Orange" WidthRequest="350" />
 
-        <ScrollView x:Name="ServerConsoleView"
-                    Grid.Row="1"
-                    >
-            <StackLayout>
-                <Editor x:Name="ServerConsole" WidthRequest="350" HeightRequest="155" VerticalTextAlignment="Start" Placeholder="console" Text="{Binding ServerConsoleText}" 
-                        IsReadOnly="True" />
+        <StackLayout>
+            <Editor x:Name="ServerConsole" WidthRequest="350" HeightRequest="155" VerticalTextAlignment="Start" Placeholder="console" Text="{Binding ServerConsoleText}" 
+                        IsReadOnly="True" IsSpellCheckEnabled="False"/>
 
-                <!-- More Label objects go here -->
-            </StackLayout>
-        </ScrollView>
+            <!-- More Label objects go here -->
+        </StackLayout>
         <Button Text="Clear Console"
     HorizontalOptions="Center"
     VerticalOptions="Center"

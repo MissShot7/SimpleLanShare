@@ -5,8 +5,10 @@ namespace CrossPlatformShare
     {
         public App()
         {
+            
             InitializeComponent();
 
+            //MainPage = new MainPage();
             MainPage = new MainPage();
 
         }
@@ -15,7 +17,7 @@ namespace CrossPlatformShare
             var window = base.CreateWindow(activationState);
 
             const int newWidth = 400;
-            const int newHeight = 430;
+            const int newHeight = 435;
 
             window.Width = newWidth;
             window.Height = newHeight;
