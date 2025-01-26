@@ -10,9 +10,12 @@ using CommunityToolkit.Maui.Storage;
 using System.IO;
 using System.Threading;
 using Microsoft.Maui.Controls;
-using static System.Net.Mime.MediaTypeNames;
 using Newtonsoft.Json.Linq;
-
+using CommunityToolkit.Maui.Alerts;
+using System.Net.Sockets;
+using System.IO;
+using System.Threading;
+using Microsoft.Maui.Controls;
 namespace CrossPlatformShare
 {
 
@@ -38,10 +41,8 @@ namespace CrossPlatformShare
 
         public MainPage()
         {
-            //Android oprávnění
-
-
             InitializeComponent();
+            
             BindingContext = new MainViewModel();
             
             //ServerClass.StartFileServer(); //"http://localhost:8080/"
@@ -61,18 +62,55 @@ namespace CrossPlatformShare
             // Set the Picker's ItemsSource to the list
             ipPicker.ItemsSource = ipAddresses;
             //Nastaví poslední vybraný soubor
-            ipPicker.SelectedItem = Preferences.Get("LastIPSelected", "custom");
+            ipPicker.SelectedItem = Preferences.Get("LastIPSelected", "");
             //napíše poslední soubor do FileUploadEntry
             FileUploadEntry.Text = Preferences.Get("LastFileUploaded", "");
             //SavePicker poslední hodnota
             SavePicker.SelectedItem = Preferences.Get("SavePickerLast", "SemiAuto");
+
+            Permissions.RequestAsync<Permissions.StorageWrite>();
+        }
+        private async void CheckForPermissions()
+        {
+#if ANDROID
+            if (!await CheckPermissionsAsync())
+            {
+                await Toast.Make("Not all permissions were accepted. Application will close.").Show();
+                Application.Current.Quit();
+            }
+#endif
         }
 
-        /*
-        void OnSliderValueChanged(object sender, ValueChangedEventArgs args) //slider
+        private async Task<bool> CheckPermissionsAsync()
         {
-            valueLabel.Text = args.NewValue.ToString("F3");
-        }*/
+            var networkAccess = Connectivity.NetworkAccess;
+            if (networkAccess != NetworkAccess.Internet)
+            {
+                await Toast.Make("No internet access available.").Show();
+                return false;
+            }
+
+            var readStatus = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+            if (readStatus != PermissionStatus.Granted)
+            {
+                readStatus = await Permissions.RequestAsync<Permissions.StorageRead>();
+            }
+
+            var writeStatus = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
+            if (writeStatus != PermissionStatus.Granted)
+            {
+                writeStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
+            }
+
+            if (readStatus == PermissionStatus.Granted && writeStatus == PermissionStatus.Granted)
+            {
+                return true;
+            }
+
+            await Toast.Make("Storage permissions are required for this app to function.").Show();
+            return false;
+        }
+
 
         async void HappyClicked(object sender, EventArgs args) //stisk tlačítka
         {
@@ -115,7 +153,7 @@ namespace CrossPlatformShare
             {
                 if (p.SelectedItem.ToString() == "custom")
                 {
-                    string result = await DisplayPromptAsync("Enter IP", "Enter LAN IPV4 adress", keyboard: Keyboard.Numeric, maxLength: 15); //vlastní ip
+                    string result = await DisplayPromptAsync("Enter IP", "Enter LAN IPV4 adress", maxLength: 15); //vlastní ip
                     if (!IsValidIPv4(result)) { NCL($"Invalid IP: {result}"); p.SelectedItem = null; return; }
                     bool DontAdd = false;
                     foreach (string item in p.GetItemsAsArray())
@@ -167,14 +205,16 @@ namespace CrossPlatformShare
                 // If the status code is 200 (OK), the server is online
                 return response.IsSuccessStatusCode;
             }
-            catch (Exception e)
+            catch (HttpRequestException e)
             {
                 // If any error occurs (timeout, network issue, etc.), return false (server is not reachable)
                 NCL($"Can't connect to: {url} ");
+                NCL(e.Message);
+                
                 return false;
             }
         }
-
+        
         async void DownloadFromIP(object sender, EventArgs args)
         {
             if (ipPicker.SelectedItem == null) { await DisplayAlert("Null", "You need to select IP", "OK"); return; }
@@ -185,16 +225,8 @@ namespace CrossPlatformShare
             string port = Preferences.Get("SavedPort", "8008");
             string address = "http://" + dip + ":" + port;
 
-            
             //jestli je soubor online
             if (!await IsServerOnlineAsync(address)) { return; }
-            /*
-            //zjistí jméno souboru
-            string FileName;
-            HttpResponseMessage response = await client.GetAsync(address + "/GetFileName");
-            FileName = await response.Content.ReadAsStringAsync();
-            //zjistí velikost souboru
-            long FileSize = long.Parse(await client.GetStringAsync(address + "/GetFileSize"));*/
 
             //zjistí informace ze serveru
             string FileInfoJSON = await client.GetStringAsync(address + "/GetFileInfo");
@@ -237,7 +269,7 @@ namespace CrossPlatformShare
 
             async void dwnd_task()
             {
-                string ConsoleDisplayPath;
+                string ConsoleDisplayPath = null;
 
                 var downloadFileUrl = address + "/dsf";
                 string savePath = UserSelectsFile ? Path.GetTempFileName() : FullPath_custom; // Determine file path based on user selection
@@ -287,23 +319,26 @@ namespace CrossPlatformShare
                         DownloadProgress.Progress = progress;
                     });
                 }
-
+                bool wasUnsuccessfull = true;
                 if (UserSelectsFile)
                 {
+                    FileSaverResult fileSaverResult;
                     try
                     {
                         // User selects file, save to custom location
-                        var fileSaverResult = await FileSaver.Default.SaveAsync(FullPath_auto, new MemoryStream(File.ReadAllBytes(savePath))); // uživatel sám vybere
+                        fileSaverResult = await FileSaver.Default.SaveAsync(FullPath_auto, new MemoryStream(File.ReadAllBytes(savePath))); // uživatel sám vybere
                         ConsoleDisplayPath = fileSaverResult.ToString();
+                        if (fileSaverResult.IsSuccessful) { wasUnsuccessfull = false; }
+                        
                     } catch (OperationCanceledException)
                     {
                         // Handle the case when the user cancels the file save
-                        ConsoleDisplayPath = "File save was cancelled.";
+                        //ConsoleDisplayPath = "File save was cancelled.";
                         NCL("User cancelled the save operation.");
                     } catch (Exception ex)
                     {
                         // Catch other exceptions (e.g., file access issues, permissions)
-                        ConsoleDisplayPath = "An error occurred while saving the file.";
+                        //ConsoleDisplayPath = "An error occurred while saving the file.";
                         NCL($"Error: {ex.Message}");
                     } finally
                     {
@@ -315,15 +350,25 @@ namespace CrossPlatformShare
                 {
                     // Direct download without user intervention
                     ConsoleDisplayPath = FullPath_custom;
+                    wasUnsuccessfull = false;
                 }
                 //konec (musí být spuštěn na hlavním vlákně)
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    NCL("File saved to " + ConsoleDisplayPath);
+                    if (wasUnsuccessfull)
+                    {
+                        NCL("Saving Unsuccessfull");
+                        DownloadProgress.Progress = 0f;
+                    } else
+                    {
+                        NCL("File saved to " + ConsoleDisplayPath);
+                        DownloadProgress.Progress = 1f;
+                    }
                     //tlačítko
                     ReciveBtn.IsEnabled = true;
-                    DownloadProgress.Progress = 1f;
+                    
                     ReciveBtn.Text = "Recieve";
+
                 });
             }
 
@@ -425,7 +470,6 @@ namespace CrossPlatformShare
             return "127.0.0.1"; // Fallback to localhost if no LAN IP found
         }
     }
-    
     public class MainViewModel : INotifyPropertyChanged
     {
         private string _serverConsoleText = "Welcome to the server console!\n";
@@ -435,8 +479,8 @@ namespace CrossPlatformShare
             get => _serverConsoleText;
             set
             {
-                if (didOnce == false) { ServerClass.mvm = this; didOnce = true; } 
-                
+                if (didOnce == false) { ServerClass.mvm = this; didOnce = true; }
+
                 if (_serverConsoleText != value)
                 {
                     _serverConsoleText = value;
@@ -469,5 +513,6 @@ namespace CrossPlatformShare
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-    
+
+
 }

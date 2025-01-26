@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CrossPlatformShare.Pages.SettingsPage"
+             Title="SettingsPage">
+    <StackLayout Padding="20" Spacing="15">
+        <!-- Port Input -->
+        <Label Text="Port" 
+                   FontSize="Medium" />
+        <Entry x:Name="PortEntry"
+                   Placeholder="Enter port (e.g., 8080)"
+                   Keyboard="Numeric" />
+
+        <!-- Connection Timeout Input -->
+        <Label Text="Connection Timeout (seconds)" 
+                   FontSize="Medium" />
+        <Entry x:Name="TimeoutEntry"
+                   Placeholder="Enter timeout (e.g., 30)"
+                   Keyboard="Numeric" />
+
+        <!-- Save Button -->
+        <Button Text="Save Settings"
+                    BackgroundColor="DodgerBlue"
+                    TextColor="White"
+                    CornerRadius="10"
+                    Clicked="OnSaveSettingsClicked" />
+    </StackLayout>
+
+</ContentPage>

@@ -1,8 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+<<<<<<< HEAD:CrossPlatformShare/Pages/MainPage.xaml
+<<<<<<< HEAD:CrossPlatformShare/Pages/MainPage.xaml
 
+             x:Class="CrossPlatformShare.Pages.MainPage"
+=======
+=======
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91:CrossPlatformShare/MainPage.xaml
+             
              x:Class="CrossPlatformShare.MainPage"
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91:CrossPlatformShare/MainPage.xaml
              Title="SimpleLanShare">
 
 
@@ -24,13 +32,21 @@
            VerticalOptions="Center"
            Grid.Column="0" />
             <!-- Button in the top-right corner -->
-            <Button Text="J"
-                    FontFamily="wingding"
+<<<<<<< HEAD:CrossPlatformShare/Pages/MainPage.xaml
+<<<<<<< HEAD:CrossPlatformShare/Pages/MainPage.xaml
+            <!--Button Text="☺"
+=======
+            <Button Text="☺"
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91:CrossPlatformShare/MainPage.xaml
+=======
+            <Button Text="☺"
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91:CrossPlatformShare/MainPage.xaml
+                    
                     FontSize="25"
                     Clicked="HappyClicked"
             HorizontalOptions="End"
             VerticalOptions="Start"
-            Grid.Column="1" />
+            Grid.Column="1" /-->
         </Grid>
         <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Center">
             <Entry x:Name="FileUploadEntry"
@@ -79,10 +95,10 @@
          VerticalOptions="Center"
          Clicked="DownloadFromIP" />
             <Label Text="Mode:" VerticalOptions="Center"/>
-            <Picker x:Name="SavePicker" SelectedItem="SemiAuto" SelectedIndexChanged="SavePickerChanged">               
+            <Picker x:Name="SavePicker" SelectedItem="SemiAuto" SelectedIndexChanged="SavePickerChanged">
                 <Picker.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
-                        <x:String>Manual</x:String> 
+                        <x:String>Manual</x:String>
                         <x:String>SemiAuto</x:String>
                         <x:String>FullAuto</x:String>
                         <!-->Manual: vždy se zeptá
@@ -96,28 +112,17 @@
 
         <ProgressBar x:Name="DownloadProgress" Progress="0" ProgressColor="Orange" WidthRequest="350" />
 
-        <ScrollView x:Name="ServerConsoleView"
-                    Grid.Row="1"
-                    >
-            <StackLayout>
-                <Editor x:Name="ServerConsole" WidthRequest="350" HeightRequest="155" VerticalTextAlignment="Start" Placeholder="console" Text="{Binding ServerConsoleText}" 
-                        IsReadOnly="True" />
+        <StackLayout>
+            <Editor x:Name="ServerConsole" WidthRequest="350" HeightRequest="155" VerticalTextAlignment="Start" Placeholder="console" Text="{Binding ServerConsoleText}" 
+                        IsReadOnly="True" IsSpellCheckEnabled="False"/>
 
-                <!-- More Label objects go here -->
-            </StackLayout>
-        </ScrollView>
+            <!-- More Label objects go here -->
+        </StackLayout>
         <Button Text="Clear Console"
     HorizontalOptions="Center"
     VerticalOptions="Center"
     Clicked="ClearConsole"
     Grid.Row="1" />
-
-
-
-
-
     </StackLayout>
-    
-    
 </ContentPage>
     

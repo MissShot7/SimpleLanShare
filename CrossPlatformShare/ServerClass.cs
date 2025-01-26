@@ -4,11 +4,14 @@ using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using Newtonsoft.Json;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Windows.Input;
 using static System.Net.Mime.MediaTypeNames;
 
 
@@ -19,16 +22,41 @@ class ServerClass
     public static Editor ConsoleEntry;
     public static MainViewModel mvm;
     public static bool running = false;
+    private static string serverIP;
     //public 
     private static TcpListener tcpListener;
+    private static int DefaultPort = 8107;
     static void NCL(string txt) //new console log
     {
         //if (ConsoleEntry == null) { return; }
 
         mvm.ServerConsoleText += txt + "\n";
     }
+    public static int GetSavedPort()
+    {
+        bool SuccessfullyParsed = int.TryParse(Preferences.Get("SavedPort", DefaultPort.ToString()), out int ParsedPort);
+        if (SuccessfullyParsed) { return ParsedPort; }
+        else { return DefaultPort; }
+    }
+    public static void SetPort(int NewPort)
+    {
+        Preferences.Set("SavedPort", NewPort);
+    }
     public static bool StartFileServer(string specificFilePath = "none")
     {
+        serverIP = GetLocalIPAddress(); //lokální ip
+        if (serverIP == "Connecting_error") { NCL("Connection error, ensure your wifi is on"); return false; } //chyba s připojením
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+        
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+=======
+        
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+
         if (running == true) { return false; }
         //jestli soubor existuje
         if (!File.Exists(specificFilePath)) { NCL($"File '{specificFilePath}' doesn't exist. Not starting"); return false; }
@@ -42,15 +70,46 @@ class ServerClass
     }
     public static string GetLocalIPAddress()
     {
+        //jestli je připojen k internetu
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+        
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+=======
+        
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+
         string localIP;
         using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
         {
-            socket.Connect("8.8.8.8", 65530);
+            try
+            {
+                socket.Connect("8.8.8.8", 65530);
+            }
+            catch { return "Connecting_error"; }
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+
+
+=======
+            
+            
+            
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+=======
+            
+            
+            
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
             IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
             localIP = endPoint.Address.ToString();
         }
         return localIP;
     }
+
     public static void StopServer()
     {
         running = false;
@@ -61,20 +120,33 @@ class ServerClass
     {
         //string serverIP = "192.168.1.207";
 
-        string serverIP = GetLocalIPAddress(); //lokálnní ip
+<<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+=======
+        
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
         //string serverIP = "169.254.173.202";
-        int port = 8008;
+        
         /*try*/
         {
+            int port = GetSavedPort();
             tcpListener = new TcpListener(IPAddress.Parse(serverIP), port);
             tcpListener.Start();
 
             NCL($"Server started on {serverIP}:{port}");
+            
+<<<<<<< HEAD
+
+=======
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
 
             while (running)
             {
-                
+
                 if (tcpListener.Pending())
                 {
                     // Accept a new connection
@@ -98,6 +170,15 @@ class ServerClass
 
     private static void HandleRequest(TcpClient client)
     {
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+ 
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+=======
+ 
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
         using (NetworkStream stream = client.GetStream())
         using (StreamReader reader = new StreamReader(stream))
         using (StreamWriter writer = new StreamWriter(stream))
@@ -121,7 +202,7 @@ class ServerClass
 
             string fileRequested = requestParts[1].TrimStart('/');
             if (fileRequested.EndsWith("/")) { fileRequested.Substring(0, fileRequested.Length - 1); } //vymaže lomítko
-            
+
 
             //--------------------------------------
             string responseHeader;
@@ -136,15 +217,25 @@ class ServerClass
 
                 return;
             }
-            else if (fileRequested == "") 
+            else if (fileRequested == "")
             {
                 // Generate html
                 responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-                string Serverurl = GetLocalIPAddress();
+<<<<<<< HEAD
+<<<<<<< HEAD
+                responseBody = SimpleHTML("Server working :)", $"Current file on host device is stored on: {SpecificFilePath} </br></br>" +
+                    $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{serverIP}/dsf</a> """ +
+                    $"""</br> FileInfo link:  <a href="/GetFileInfo">{serverIP}/GetFileInfo</a> """);
+            }
+            else if (fileRequested == "GetFileInfo") //informace o souboru
+=======
+=======
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
                 responseBody = SimpleHTML("Server working :)", $"Current file on host device is stored on: {SpecificFilePath} </br></br>" + 
-                    $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{Serverurl}/dsf</a> """+
-                    $"""</br> FileInfo link:  <a href="/GetFileInfo">{Serverurl}/GetFileInfo</a> """);
+                    $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{serverIP}/dsf</a> """+
+                    $"""</br> FileInfo link:  <a href="/GetFileInfo">{serverIP}/GetFileInfo</a> """);
             } else if (fileRequested == "GetFileInfo") //informace o souboru
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
             {
                 var fileInfo = new FileInfo(SpecificFilePath);
                 var fileDetails = new
@@ -161,7 +252,8 @@ class ServerClass
 
                 responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
                 responseBody = FIleInfoAsJSON ?? "Error";
-            } else //chyba
+            }
+            else //chyba
             {
                 responseHeader = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\n\r\n";
                 responseBody = SimpleHTML("Bad Request", "Doesn't exist");
@@ -224,7 +316,7 @@ class ServerClass
 
         client.Close();
     }
-    private static string SimpleHTML(string h1, string p, string title="server")
+    private static string SimpleHTML(string h1, string p, string title = "server")
     {
         string credits = $"""
 </br></br></br></br>
@@ -287,3 +379,53 @@ class ServerClass
 #endif
     }
 }
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+public class MainViewModel : INotifyPropertyChanged
+{
+    private string _serverConsoleText = "Welcome to the server console!\n";
+    private bool didOnce = false;
+    public string ServerConsoleText
+    {
+        get => _serverConsoleText;
+        set
+        {
+            if (didOnce == false) { ServerClass.mvm = this; didOnce = true; }
+
+            if (_serverConsoleText != value)
+            {
+                _serverConsoleText = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // Command to clear the console
+    public ICommand ClearConsoleCommand { get; }
+
+    public MainViewModel()
+    {
+        ClearConsoleCommand = new Command(ClearConsole);
+    }
+    public void LogToConsole(string message)
+    {
+        ServerConsoleText += $"{DateTime.Now}: {message}\n";
+    }
+
+    private void ClearConsole()
+    {
+        ServerConsoleText = string.Empty; // Clear the content of the Editor
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+=======
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+=======
+>>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SimpleLANShare.AppShell"
+             xmlns:local="clr-namespace:CrossPlatformShare"
+             xmlns:pages="clr-namespace:CrossPlatformShare.Pages"
+             >
+    
+    <!-- Flyout Items -->
+    <FlyoutItem Title="Home" Icon="Resources\Images\icon_home.svg">
+        <ShellContent ContentTemplate="{DataTemplate pages:MainPage}" Shell.NavBarIsVisible="False" />
+        
+    </FlyoutItem>
+
+    <FlyoutItem Title="Settings" Icon="Resources\Images\icon_settings.svg">
+        <ShellContent ContentTemplate="{DataTemplate pages:SettingsPage}" Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
+    
+    <FlyoutItem Title="About" Icon="Resources\Images\icon_info.svg">
+        <ShellContent ContentTemplate="{DataTemplate pages:AboutPage}" Shell.NavBarIsVisible="False" />
+    </FlyoutItem>
+</Shell>
