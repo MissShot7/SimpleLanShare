@@ -1,24 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<color name="colorPrimary">#87CEEB</color>
-<<<<<<< HEAD
-<<<<<<< HEAD
-	<!--  Light Blue  -->
-	<color name="colorPrimaryDark">#4682B4</color>
-	<!--  Steel Blue for contrast  -->
-	<color name="colorAccent">#5DADE2</color>
-	<!--  Soft Sky Blue for accents  -->
-</resources>
-=======
-=======
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
 	<!-- Light Blue -->
 	<color name="colorPrimaryDark">#4682B4</color>
 	<!-- Steel Blue for contrast -->
 	<color name="colorAccent">#5DADE2</color>
 	<!-- Soft Sky Blue for accents -->
 </resources>
-<<<<<<< HEAD
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
-=======
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91

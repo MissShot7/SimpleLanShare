@@ -1,16 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-<<<<<<< HEAD:CrossPlatformShare/Pages/MainPage.xaml
-<<<<<<< HEAD:CrossPlatformShare/Pages/MainPage.xaml
-
-             x:Class="CrossPlatformShare.Pages.MainPage"
-=======
-=======
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91:CrossPlatformShare/MainPage.xaml
              
-             x:Class="CrossPlatformShare.MainPage"
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91:CrossPlatformShare/MainPage.xaml
+             x:Class="CrossPlatformShare.Pages.MainPage"
              Title="SimpleLanShare">
 
 
@@ -32,16 +24,7 @@
            VerticalOptions="Center"
            Grid.Column="0" />
             <!-- Button in the top-right corner -->
-<<<<<<< HEAD:CrossPlatformShare/Pages/MainPage.xaml
-<<<<<<< HEAD:CrossPlatformShare/Pages/MainPage.xaml
             <!--Button Text="☺"
-=======
-            <Button Text="☺"
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91:CrossPlatformShare/MainPage.xaml
-=======
-            <Button Text="☺"
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91:CrossPlatformShare/MainPage.xaml
-                    
                     FontSize="25"
                     Clicked="HappyClicked"
             HorizontalOptions="End"

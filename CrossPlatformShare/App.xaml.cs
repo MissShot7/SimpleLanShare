@@ -10,14 +10,7 @@ namespace CrossPlatformShare
             InitializeComponent();
 
             //MainPage = new MainPage();
-<<<<<<< HEAD
-<<<<<<< HEAD
             MainPage = new AppShell();
-=======
-=======
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
-            MainPage = new MainPage();
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
 
         }
         protected override Window CreateWindow(IActivationState activationState)
@@ -25,7 +18,7 @@ namespace CrossPlatformShare
             var window = base.CreateWindow(activationState);
 
             const int newWidth = 400;
-            const int newHeight = 435;
+            const int newHeight = 430;
 
             window.Width = newWidth;
             window.Height = newHeight;

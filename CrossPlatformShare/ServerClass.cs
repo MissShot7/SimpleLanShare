@@ -47,15 +47,7 @@ class ServerClass
         serverIP = GetLocalIPAddress(); //lokální ip
         if (serverIP == "Connecting_error") { NCL("Connection error, ensure your wifi is on"); return false; } //chyba s připojením
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
         
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
-=======
-        
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
 
         if (running == true) { return false; }
         //jestli soubor existuje
@@ -71,15 +63,7 @@ class ServerClass
     public static string GetLocalIPAddress()
     {
         //jestli je připojen k internetu
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
         
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
-=======
-        
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
 
         string localIP;
         using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
@@ -89,21 +73,9 @@ class ServerClass
                 socket.Connect("8.8.8.8", 65530);
             }
             catch { return "Connecting_error"; }
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-
-
-=======
             
             
             
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
-=======
-            
-            
-            
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
             IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
             localIP = endPoint.Address.ToString();
         }
@@ -120,15 +92,7 @@ class ServerClass
     {
         //string serverIP = "192.168.1.207";
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
         
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
-=======
-        
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
         //string serverIP = "169.254.173.202";
         
         /*try*/
@@ -139,10 +103,6 @@ class ServerClass
 
             NCL($"Server started on {serverIP}:{port}");
             
-<<<<<<< HEAD
-
-=======
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
 
             while (running)
             {
@@ -170,15 +130,7 @@ class ServerClass
 
     private static void HandleRequest(TcpClient client)
     {
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
  
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
-=======
- 
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
         using (NetworkStream stream = client.GetStream())
         using (StreamReader reader = new StreamReader(stream))
         using (StreamWriter writer = new StreamWriter(stream))
@@ -221,21 +173,10 @@ class ServerClass
             {
                 // Generate html
                 responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-<<<<<<< HEAD
-<<<<<<< HEAD
-                responseBody = SimpleHTML("Server working :)", $"Current file on host device is stored on: {SpecificFilePath} </br></br>" +
-                    $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{serverIP}/dsf</a> """ +
-                    $"""</br> FileInfo link:  <a href="/GetFileInfo">{serverIP}/GetFileInfo</a> """);
-            }
-            else if (fileRequested == "GetFileInfo") //informace o souboru
-=======
-=======
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
                 responseBody = SimpleHTML("Server working :)", $"Current file on host device is stored on: {SpecificFilePath} </br></br>" + 
                     $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{serverIP}/dsf</a> """+
                     $"""</br> FileInfo link:  <a href="/GetFileInfo">{serverIP}/GetFileInfo</a> """);
             } else if (fileRequested == "GetFileInfo") //informace o souboru
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
             {
                 var fileInfo = new FileInfo(SpecificFilePath);
                 var fileDetails = new
@@ -380,8 +321,7 @@ class ServerClass
     }
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 public class MainViewModel : INotifyPropertyChanged
 {
     private string _serverConsoleText = "Welcome to the server console!\n";
@@ -425,7 +365,5 @@ public class MainViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
-=======
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
-=======
->>>>>>> 38f80b702583d17db3d2cdced18bb80c73617e91
+
+
