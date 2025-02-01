@@ -4,19 +4,43 @@
              x:Class="SimpleLANShare.AppShell"
              xmlns:local="clr-namespace:CrossPlatformShare"
              xmlns:pages="clr-namespace:CrossPlatformShare.Pages"
+             
+             BackgroundColor="{AppThemeBinding Light='White', Dark='#121212'}" 
+             Shell.ForegroundColor="{AppThemeBinding Light='DarkSlateGray', Dark='White'}"
              >
-    
+
     <!-- Flyout Items -->
-    <FlyoutItem Title="Home" Icon="Resources\Images\icon_home.svg">
-        <ShellContent ContentTemplate="{DataTemplate pages:MainPage}" Shell.NavBarIsVisible="False" />
-        
+    <FlyoutItem Title="Home" Icon="{AppThemeBinding Light='Resources/Images/icon_home_light.svg', Dark='Resources/Images/icon_home_dark.svg'}" Shell.TitleColor="{AppThemeBinding Light=DarkSlateGray, Dark=WhiteSmoke}">
+        <ShellContent ContentTemplate="{DataTemplate pages:MainPage}">
+            <Shell.NavBarIsVisible>
+                <OnPlatform x:TypeArguments="x:Boolean">
+                    <On Platform="Android" Value="true" />
+                    <On Platform="iOS, MacCatalyst, WinUI" Value="false" />
+                </OnPlatform>
+            </Shell.NavBarIsVisible>
+        </ShellContent>
     </FlyoutItem>
 
-    <FlyoutItem Title="Settings" Icon="Resources\Images\icon_settings.svg">
-        <ShellContent ContentTemplate="{DataTemplate pages:SettingsPage}" Shell.NavBarIsVisible="False" />
+    <FlyoutItem Title="Settings" Icon="{AppThemeBinding Light='Resources/Images/icon_settings_light.svg', Dark='Resources/Images/icon_settings_dark.svg'}" Shell.TitleColor="{AppThemeBinding Light=DarkSlateGray, Dark=WhiteSmoke}">
+        <ShellContent ContentTemplate="{DataTemplate pages:SettingsPage}">
+            <Shell.NavBarIsVisible>
+                <OnPlatform x:TypeArguments="x:Boolean">
+                    <On Platform="Android" Value="true" />
+                    <On Platform="iOS, MacCatalyst, WinUI" Value="false" />
+                </OnPlatform>
+            </Shell.NavBarIsVisible>
+        </ShellContent>
     </FlyoutItem>
-    
-    <FlyoutItem Title="About" Icon="Resources\Images\icon_info.svg">
-        <ShellContent ContentTemplate="{DataTemplate pages:AboutPage}" Shell.NavBarIsVisible="False" />
+
+    <FlyoutItem Title="About" Icon="{AppThemeBinding Light='Resources/Images/icon_info_light.svg', Dark='Resources/Images/icon_info_dark.svg'}">
+        <ShellContent ContentTemplate="{DataTemplate pages:AboutPage}" Shell.TitleColor="{AppThemeBinding Light=DarkSlateGray, Dark=WhiteSmoke}">
+            <Shell.NavBarIsVisible>
+                <OnPlatform x:TypeArguments="x:Boolean">
+                    <On Platform="Android" Value="true" />
+                    <On Platform="iOS, MacCatalyst, WinUI" Value="false" />
+                </OnPlatform>
+            </Shell.NavBarIsVisible>
+        </ShellContent>
     </FlyoutItem>
+
 </Shell>

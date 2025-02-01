@@ -2,28 +2,45 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CrossPlatformShare.Pages.SettingsPage"
+             BackgroundColor="{AppThemeBinding Light='White', Dark='#121212'}"
              Title="SettingsPage">
+
+    <ContentPage.Resources>
+        <!-- Global Styles -->
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+
+            <Setter Property="HorizontalOptions" Value="Start" />
+            <Setter Property="VerticalOptions" Value="Center"  />
+        </Style>
+        <Style TargetType="Entry">
+
+            <Setter Property="WidthRequest" Value="280" />
+        </Style>
+
+    </ContentPage.Resources>
+
     <StackLayout Padding="20" Spacing="15">
         <!-- Port Input -->
-        <Label Text="Port" 
-                   FontSize="Medium" />
-        <Entry x:Name="PortEntry"
+        <Label Text="Port" FontAttributes="Bold" FontSize="18" />
+        <Border>
+            <Entry x:Name="PortEntry"
                    Placeholder="Enter port (e.g., 8080)"
+                   MaxLength="5"
                    Keyboard="Numeric" />
+        </Border>
 
         <!-- Connection Timeout Input -->
-        <Label Text="Connection Timeout (seconds)" 
-                   FontSize="Medium" />
-        <Entry x:Name="TimeoutEntry"
-                   Placeholder="Enter timeout (e.g., 30)"
+        <Label Text="Connection Timeout (seconds)" FontAttributes="Bold" FontSize="18" />
+        <Border>
+            <Entry x:Name="TimeoutEntry"
+                   Placeholder="Enter timeout (e.g., 30)" 
+                   MaxLength="3" 
                    Keyboard="Numeric" />
+        </Border>
 
         <!-- Save Button -->
-        <Button Text="Save Settings"
-                    BackgroundColor="DodgerBlue"
-                    TextColor="White"
-                    CornerRadius="10"
-                    Clicked="OnSaveSettingsClicked" />
+        <Button Text="Save Settings" Clicked="OnSaveSettingsClicked" />
     </StackLayout>
 
 </ContentPage>

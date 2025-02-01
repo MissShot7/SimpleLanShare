@@ -4,14 +4,90 @@
              xmlns:local="clr-namespace:CrossPlatformShare"
              x:Class="CrossPlatformShare.App">
     <Application.Resources>
-        <ResourceDictionary>
-
-        <!--
-            For information about styling .NET MAUI pages
-            please refer to the documentation:
-            https://go.microsoft.com/fwlink/?linkid=2282329
-        -->
-
-        </ResourceDictionary>
+        <!-- Global Styles -->
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="TextColor">
+                <Setter.Value>
+                    <AppThemeBinding Light="DarkSlateGray" Dark="#E0E0E0" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="BackgroundColor">
+                <Setter.Value>
+                    <AppThemeBinding Light="DodgerBlue" Dark="#005A9E" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="TextColor">
+                <Setter.Value>
+                    <AppThemeBinding Light="White" Dark="#FFFFFF" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor">
+                                    <Setter.Value>
+                                        <AppThemeBinding Light="DodgerBlue" Dark="#005A9E" />
+                                    </Setter.Value>
+                                </Setter>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Pressed">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor">
+                                    <Setter.Value>
+                                        <AppThemeBinding Light="RoyalBlue" Dark="#003E6B" />
+                                    </Setter.Value>
+                                </Setter>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+        <!-- Entry-->
+        <Style TargetType="Entry">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="BackgroundColor">
+                <Setter.Value>
+                    <AppThemeBinding Light="LightGray" Dark="#1C1C1C" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="WidthRequest" Value="240" />
+            <Setter Property="IsSpellCheckEnabled" Value="False" />
+        </Style>
+        <Style TargetType="Picker">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="BackgroundColor">
+                <Setter.Value>
+                    <AppThemeBinding Light="LightGray" Dark="#1C1C1C" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="WidthRequest" Value="160" />
+        </Style>
+        <!-- border-->
+        <Style TargetType="Border">
+            <Setter Property="Stroke">
+                <Setter.Value>
+                    <AppThemeBinding Light="LightGray" Dark="#606060" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="StrokeShape" Value="RoundRectangle 10,10,10,10" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalOptions" Value="Start" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=LightGray, Dark=#1C1C1C}" />
+        </Style>
     </Application.Resources>
 </Application>

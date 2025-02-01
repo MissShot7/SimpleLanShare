@@ -40,14 +40,11 @@ public partial class MainPage : ContentPage
             ServerConsole.Text += txt + "\n";
         });
     }
-
     public MainPage()
     {
         InitializeComponent();
 
         BindingContext = new MainViewModel();
-
-        //ServerClass.StartFileServer(); //"http://localhost:8080/"
 
         //načte poslední IP
         var savedJson = Preferences.Get("IPlist", "[]");
@@ -65,59 +62,14 @@ public partial class MainPage : ContentPage
         ipPicker.ItemsSource = ipAddresses;
         //Nastaví poslední vybraný soubor
         ipPicker.SelectedItem = Preferences.Get("LastIPSelected", "");
-        //napíše poslední soubor do FileUploadEntry
-        FileUploadEntry.Text = Preferences.Get("LastFileUploaded", "");
         //SavePicker poslední hodnota
         SavePicker.SelectedItem = Preferences.Get("SavePickerLast", "SemiAuto");
-
-        Permissions.RequestAsync<Permissions.StorageWrite>();
+        //napíše poslední soubor do FileUploadEntry
+        FileUploadEntry.Text = MiscClass.ProcessSharedObject();
     }
-    private async void CheckForPermissions()
-    {
-#if ANDROID
-        if (!await CheckPermissionsAsync())
-        {
-            await Toast.Make("Not all permissions were accepted. Application will close.").Show();
-            Application.Current.Quit();
-        }
-#endif
-    }
-
-    private async Task<bool> CheckPermissionsAsync()
-    {
-        var networkAccess = Connectivity.NetworkAccess;
-        if (networkAccess != NetworkAccess.Internet)
-        {
-            await Toast.Make("No internet access available.").Show();
-            return false;
-        }
-
-        var readStatus = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
-        if (readStatus != PermissionStatus.Granted)
-        {
-            readStatus = await Permissions.RequestAsync<Permissions.StorageRead>();
-        }
-
-        var writeStatus = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
-        if (writeStatus != PermissionStatus.Granted)
-        {
-            writeStatus = await Permissions.RequestAsync<Permissions.StorageWrite>();
-        }
-
-        if (readStatus == PermissionStatus.Granted && writeStatus == PermissionStatus.Granted)
-        {
-            return true;
-        }
-
-        await Toast.Make("Storage permissions are required for this app to function.").Show();
-        return false;
-    }
+    
 
 
-    async void HappyClicked(object sender, EventArgs args) //stisk tlačítka
-    {
-        await DisplayAlert("Credits", "Created by MissShot7 (https://github.com/MissShot7/) in 2025", "Continue");
-    }
     async void StartLanSharing(object sender, EventArgs args)
     {
         //rozhodne akci
@@ -209,12 +161,16 @@ public partial class MainPage : ContentPage
             // If the status code is 200 (OK), the server is online
             return response.IsSuccessStatusCode;
         }
-        catch (HttpRequestException e)
+        catch (TaskCanceledException e) // Catches timeouts
         {
-            // If any error occurs (timeout, network issue, etc.), return false (server is not reachable)
-            NCL($"Can't connect to: {url} ");
+            NCL($"Request to {url} timed out.");
             NCL(e.Message);
-
+            return false;
+        }
+        catch (HttpRequestException e) // Catches other HTTP-related errors
+        {
+            NCL($"Can't connect to: {url}");
+            NCL(e.Message);
             return false;
         }
     }
@@ -267,6 +223,7 @@ public partial class MainPage : ContentPage
 
         //vypne tlačítko
         ReciveBtn.IsEnabled = false;
+        ReciveBtn.BackgroundColor = Colors.DarkBlue;
         ReciveBtn.Text = "Recieving";
         //začne stahovací vlákno
         Thread downloadThread = new Thread(dwnd_task);
@@ -375,11 +332,12 @@ public partial class MainPage : ContentPage
                 }
                 //tlačítko
                 ReciveBtn.IsEnabled = true;
+                ReciveBtn.BackgroundColor = Colors.DodgerBlue;
 
                 ReciveBtn.Text = "Recieve";
-
             });
         }
+
 
         string NextAvailableFilename(string path)
         {
@@ -459,23 +417,5 @@ public partial class MainPage : ContentPage
     downloadsPath = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads).AbsolutePath;
 #endif
         return downloadsPath;
-    }
-    private static string GetLocalIPAddress()
-    {
-        foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
-        {
-            if (networkInterface.OperationalStatus == OperationalStatus.Up)
-            {
-                foreach (var ip in networkInterface.GetIPProperties().UnicastAddresses)
-                {
-                    // IPv4 address and not a loopback address
-                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip.Address))
-                    {
-                        return ip.Address.ToString();
-                    }
-                }
-            }
-        }
-        return "127.0.0.1"; // Fallback to localhost if no LAN IP found
     }
 }

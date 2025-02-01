@@ -2,49 +2,86 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CrossPlatformShare.Pages.AboutPage"
-             Title="About">
-    <StackLayout>
+             Title="About"
+             BackgroundColor="{AppThemeBinding Light='White', Dark='#121212'}">
 
-        <ScrollView>
-                <VerticalStackLayout Padding="20" Spacing="15">
-                    <!-- Project Title -->
-                    <Label Text="SimpleLANShare"
-                   FontSize="24"
+    <ContentPage.Resources>
+        <!-- Global Label Style -->
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=DarkSlateGray, Dark=LightGray}" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="Margin" Value="5,2"/>
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <!-- Project Title -->
+            <Label Text="SimpleLANShare"
+                   FontSize="28"
                    FontAttributes="Bold"
-                   HorizontalOptions="Center" />
+                   TextColor="{AppThemeBinding Light=Black, Dark=White}" />
 
-                    <!-- Project Description -->
-                    <Label Text="SimpleLANShare is an open-source tool for sharing files over local network."
+            <!-- Project Description -->
+            <Label Text="An open-source tool for sharing files over the local network."
                    FontSize="16"
-                   HorizontalTextAlignment="Center" />
-
-                    <!-- Version Information -->
-                    <Label Text="Version: 1.0.0" x:Name="VersionLabel"
-                   FontSize="14"
-                   HorizontalOptions="Center" />
-
-                    <!-- Links Section -->
-                    <StackLayout Spacing="10">
-                        <Button Text="View on GitHub"
-                        BackgroundColor="LightGreen"
-                        TextColor="White"
-                        CornerRadius="8"
-                        Clicked="OnGitHubButtonClicked" />
-                        
-                        <!-- Text="Visit Website" 
-                        BackgroundColor="LightGreen"
-                        TextColor="White"
-                        CornerRadius="8"
-                        Clicked="OnWebsiteButtonClicked" /-->
-                    </StackLayout>
-
-                    <!-- Acknowledgments or Credits -->
-                    <Label Text="Thank you for supporting SimpleLANShare!"
-                   FontSize="14"
                    HorizontalTextAlignment="Center"
-                   TextColor="Gray" />
-                </VerticalStackLayout>
-            </ScrollView>
-    </StackLayout>
-    
+                   Padding="10" />
+
+            <!-- Version Information -->
+            <Label Text="Version: 1.0.0"
+                   FontSize="16"
+                   x:Name="VersionLabel"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=DarkSlateGray, Dark=LightGray}" />
+
+            <!-- Links Section -->
+            <Button Text="View on GitHub"
+                    Clicked="OnGitHubButtonClicked"
+                    FontSize="16"
+                    TextColor="White"
+                    CornerRadius="12"
+                    Padding="12"
+                    HorizontalOptions="Center"
+                    WidthRequest="200">
+                <Button.BackgroundColor>
+                    <AppThemeBinding Light="MediumSeaGreen" Dark="DarkOliveGreen" />
+                </Button.BackgroundColor>
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                            Value="{AppThemeBinding Light=MediumSeaGreen, Dark=DarkOliveGreen}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                            Value="{AppThemeBinding Light=DarkSeaGreen, Dark=Olive}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+            </Button>
+
+            <!-- Acknowledgments -->
+            <Label Text="Thank you for supporting SimpleLANShare!"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   
+                   TextColor="{AppThemeBinding Light=DimGray, Dark=Silver}" />
+
+            <!-- Creator Information -->
+            <Label Text="Created by MissShot7"
+                   FontSize="16"
+                   FontAttributes="Italic"
+                   TextColor="{AppThemeBinding Light=DarkSlateGray, Dark=LightGray}" />
+        </VerticalStackLayout>
+    </ScrollView>
+
 </ContentPage>

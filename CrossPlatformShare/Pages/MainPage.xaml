@@ -1,111 +1,76 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             
              x:Class="CrossPlatformShare.Pages.MainPage"
+             BackgroundColor="{AppThemeBinding Light='White', Dark='#121212'}"
              Title="SimpleLanShare">
 
+    <ContentPage.Resources>
+        <!-- Global Styles -->
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
 
-    <StackLayout>
-
-
-        <Grid>
-            <!-- Define two columns -->
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <!-- Centered Label -->
-            <Label x:Name="UploadLabel"
-           Text="Upload:"
-           FontAttributes="Bold"
-           FontSize="22"
-           HorizontalOptions="Center"
-           VerticalOptions="Center"
-           Grid.Column="0" />
-            <!-- Button in the top-right corner -->
-            <!--Button Text="☺"
-                    FontSize="25"
-                    Clicked="HappyClicked"
-            HorizontalOptions="End"
-            VerticalOptions="Start"
-            Grid.Column="1" /-->
-        </Grid>
-        <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Center">
-            <Entry x:Name="FileUploadEntry"
-               Placeholder="Enter file location"
-               IsSpellCheckEnabled="false"
-               WidthRequest="300"
-               ReturnType="Done"
-        />
-            <Button Text="Browse" x:Name="BrowseBtn"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"
-                Clicked="UploadFileDialog" />
-        </StackLayout>
-        <Button Text="Host"
-    HorizontalOptions="Center"
-    VerticalOptions="Center"
-    Clicked="StartLanSharing" />
-
-        <Label x:Name="RecieveLabel"
-           Text="Recieve:"
-           FontAttributes="Bold"
-           FontSize="22"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+    </ContentPage.Resources>
 
 
-        <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Center">
-            <Picker x:Name="ipPicker"
-                    WidthRequest="200"
-            SelectedIndexChanged="IPpickerChanged"
-            >
-                <Picker.ItemsSource>
-                    <x:Array Type="{x:Type x:String}">
-                        <x:String>custom</x:String>
-                        <x:String>192.168.1.207</x:String>
-                    </x:Array>
-                </Picker.ItemsSource>
-            </Picker>
+    <StackLayout Padding="10" Spacing="10" HorizontalOptions="Center">
 
-            <Button Text="Delete history"
-                    Clicked="DeleteIPhistory"/>
-        </StackLayout>
-        <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Center">
-            <Button Text="Recieve" x:Name="ReciveBtn"
-         HorizontalOptions="Center"
-         VerticalOptions="Center"
-         Clicked="DownloadFromIP" />
-            <Label Text="Mode:" VerticalOptions="Center"/>
-            <Picker x:Name="SavePicker" SelectedItem="SemiAuto" SelectedIndexChanged="SavePickerChanged">
-                <Picker.ItemsSource>
-                    <x:Array Type="{x:Type x:String}">
-                        <x:String>Manual</x:String>
-                        <x:String>SemiAuto</x:String>
-                        <x:String>FullAuto</x:String>
-                        <!-->Manual: vždy se zeptá
-                            SemiAuto: Zeptá se při konfliktu
-                            FullAuto: neptá se, při konfliktu nalezne nové jméno
-                        <!-->
-                    </x:Array>
-                </Picker.ItemsSource>
-            </Picker>
+        <!-- Host-->
+        <Label x:Name="UploadLabel" Text="Upload:" FontAttributes="Bold" FontSize="23" />
+        <StackLayout Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+            <Border >
+                <Entry x:Name="FileUploadEntry" Placeholder="Enter file location" IsSpellCheckEnabled="false" WidthRequest="280"/>
+            </Border>
+            <Button Text="Browse" x:Name="BrowseBtn" Clicked="UploadFileDialog" />
         </StackLayout>
 
-        <ProgressBar x:Name="DownloadProgress" Progress="0" ProgressColor="Orange" WidthRequest="350" />
+        <Button Text="Host" Clicked="StartLanSharing" />
+        <!-- recieve-->
+        <Label x:Name="RecieveLabel" Text="Recieve:" FontAttributes="Bold" FontSize="23"/>
+
+        <StackLayout Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+            <Border>
+                <Picker x:Name="ipPicker" SelectedIndexChanged="IPpickerChanged">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>custom</x:String>
+                            <x:String>192.168.1.207</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </Border>
+            <Button Text="Delete history" Clicked="DeleteIPhistory" />
+        </StackLayout>
+
+        <StackLayout Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
+            <Button Text="Recieve" x:Name="ReciveBtn" Clicked="DownloadFromIP" />
+            <Label Text="Mode:" />
+            <Border>
+                <Picker x:Name="SavePicker" SelectedItem="SemiAuto" SelectedIndexChanged="SavePickerChanged">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Manual</x:String>
+                            <x:String>SemiAuto</x:String>
+                            <x:String>FullAuto</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </Border>
+        </StackLayout>
+
+        <ProgressBar x:Name="DownloadProgress" Progress="0" ProgressColor="Orange" WidthRequest="300" />
 
         <StackLayout>
-            <Editor x:Name="ServerConsole" WidthRequest="350" HeightRequest="155" VerticalTextAlignment="Start" Placeholder="console" Text="{Binding ServerConsoleText}" 
-                        IsReadOnly="True" IsSpellCheckEnabled="False"/>
-
-            <!-- More Label objects go here -->
+            <Border HorizontalOptions="Center">
+            <Editor x:Name="ServerConsole" WidthRequest="300" HeightRequest="100" 
+                    VerticalTextAlignment="Start" Placeholder="console" Text="{Binding ServerConsoleText}"
+                    IsReadOnly="True" IsSpellCheckEnabled="False" />
+            </Border>
         </StackLayout>
-        <Button Text="Clear Console"
-    HorizontalOptions="Center"
-    VerticalOptions="Center"
-    Clicked="ClearConsole"
-    Grid.Row="1" />
+
+        <Button Text="Clear Console" Clicked="ClearConsole" />
     </StackLayout>
 </ContentPage>
-    

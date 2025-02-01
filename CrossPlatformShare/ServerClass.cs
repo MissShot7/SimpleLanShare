@@ -1,5 +1,6 @@
 ﻿//using AndroidX.Navigation;
 using CrossPlatformShare;
+using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
 using Newtonsoft.Json;
@@ -13,7 +14,9 @@ using System.Text;
 using System.Threading;
 using System.Windows.Input;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
+using Microsoft.Extensions.FileProviders;
 
 class ServerClass
 {
@@ -26,7 +29,7 @@ class ServerClass
     //public 
     private static TcpListener tcpListener;
     private static int DefaultPort = 8107;
-    static void NCL(string txt) //new console log
+    public static void NCL(string txt) //new console log
     {
         //if (ConsoleEntry == null) { return; }
 
@@ -159,8 +162,31 @@ class ServerClass
             //--------------------------------------
             string responseHeader;
             string responseBody;
+
+            if (fileRequested == "dsf_uri") //download specific file
+            {
+#if ANDROID
+                try{
+                writer.Flush();
+                byte[] bytes = MiscClass.ReadBytesFromUri(MiscClass.uri);
+                stream.Write(bytes, 0, bytes.Length);
+                } catch(Exception e){NCL(e.Message);}
+#endif
+                return;
+
+                /*
+                Android.Net.Uri uri = MiscClass.uri;
+                responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+                writer.Write(responseHeader);
+                writer.Flush();
+                byte[] bytes = ReadBytesFromUri(uri);
+                stream.Write(bytes, 0, bytes.Length);
+
+                return;*/
+            }
             if (fileRequested == "dsf") //download specific file
             {
+
                 byte[] fileBytes = File.ReadAllBytes(SpecificFilePath);
                 responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
                 writer.Write(responseHeader);
@@ -365,5 +391,3 @@ public class MainViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
-
-
