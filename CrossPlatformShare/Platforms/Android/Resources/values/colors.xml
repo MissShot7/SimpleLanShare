@@ -6,4 +6,6 @@
 	<!-- Steel Blue for contrast -->
 	<color name="colorAccent">#5DADE2</color>
 	<!-- Soft Sky Blue for accents -->
+	<color name="splash_screen_background">#87CEEB</color>
+	<!-- Blue -->
 </resources>

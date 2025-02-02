@@ -24,10 +24,10 @@
             <Border >
                 <Entry x:Name="FileUploadEntry" Placeholder="Enter file location" IsSpellCheckEnabled="false" WidthRequest="280"/>
             </Border>
-            <Button Text="Browse" x:Name="BrowseBtn" Clicked="UploadFileDialog" />
+            <Button Text="Browse" x:Name="BrowseBtn" Clicked="BrowseBtnPressed" /> <!--Also server as button for stopping intent sharing-->
         </StackLayout>
 
-        <Button Text="Host" Clicked="StartLanSharing" />
+        <Button Text="Host" Clicked="StartLanSharing" x:Name="Hostbtn" />
         <!-- recieve-->
         <Label x:Name="RecieveLabel" Text="Recieve:" FontAttributes="Bold" FontSize="23"/>
 

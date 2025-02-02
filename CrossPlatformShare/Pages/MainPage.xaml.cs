@@ -16,6 +16,8 @@ using System.Net.Sockets;
 using System.IO;
 using System.Threading;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 namespace CrossPlatformShare.Pages;
 
 
@@ -64,40 +66,99 @@ public partial class MainPage : ContentPage
         ipPicker.SelectedItem = Preferences.Get("LastIPSelected", "");
         //SavePicker poslední hodnota
         SavePicker.SelectedItem = Preferences.Get("SavePickerLast", "SemiAuto");
-        //napíše poslední soubor do FileUploadEntry
-        FileUploadEntry.Text = MiscClass.ProcessSharedObject();
+
+        if (ShareIntentHelper.IntentEnabled) //Intentversion
+        {
+            #if ANDROID
+            if (ShareIntentHelper.uribytes != null && ShareIntentHelper.intent != null) 
+            { 
+                //NCL(ShareIntentHelper.uribytes.Length.ToString());
+
+            
+                //NCL(ShareIntentHelper.ReadBytesFromUri((Android.Net.Uri)ShareIntentHelper.intent.GetParcelableExtra(Android.Content.Intent.ExtraStream)).Length.ToString());
+            }
+            #endif
+            FileUploadEntry.Text = "[File from share menu]";
+            NCL("Share intent is enabled");
+        } else //normal version
+        {
+            FileUploadEntry.Text = ShareIntentHelper.ProcessSharedObject(); //last file is written to FileUploadEntry
+        }
+        IntentVersionEnabled(ShareIntentHelper.IntentEnabled); //decides if upload menu will be intent or no
+
+        
     }
-    
+
+    void IntentVersionEnabled(bool enabled) //if launched from intent functionality and look is slightly modified
+    {
+        if (enabled)
+        {
+            FileUploadEntry.IsEnabled = false;
+            BrowseBtn.Text = "Change";
+        } else
+        {
+            FileUploadEntry.IsEnabled = true;
+            BrowseBtn.Text = "Browse";
+        }
+    }
+    void UploadBtnAndEntryEnabled(bool enabled)
+    {
+        if (ShareIntentHelper.IntentEnabled) //intent version
+        {
+            FileUploadEntry.IsEnabled = false;
+            BrowseBtn.Text = "Change";
+            if (enabled)
+            {
+                Hostbtn.Text = "Host";
+                BrowseBtn.IsEnabled = true;
+            }
+            else
+            {
+                Hostbtn.Text = "Stop";
+                BrowseBtn.IsEnabled = false;
+            }
+        } else //normal
+        {
+            BrowseBtn.Text = "Browse";
+            if (enabled)
+            {
+                Hostbtn.Text = "Host";
+                BrowseBtn.IsEnabled = true;
+                FileUploadEntry.IsEnabled = true;
+            } else
+            {
+                Hostbtn.Text = "Stop";
+                BrowseBtn.IsEnabled = false;
+                FileUploadEntry.IsEnabled = false;
+            }
+        }
+    }
 
 
     async void StartLanSharing(object sender, EventArgs args)
     {
-        //rozhodne akci
-        Button button = (Button)sender;
-        if (button.Text == "Host")
+        //decide whether stop or start server
+        //Button button = (Button)sender;
+        if (Hostbtn.Text == "Host")
         {
-            if (File.Exists(FileUploadEntry.Text))
+            bool successfull = ServerClass.StartFileServer(FileUploadEntry.Text); //spustí server
+            if (successfull)
             {
-                bool successfull = ServerClass.StartFileServer(FileUploadEntry.Text); //spustí server
-                if (successfull)
+                UploadBtnAndEntryEnabled(false);
+                if (!ShareIntentHelper.IntentEnabled)
                 {
                     Preferences.Set("LastFileUploaded", FileUploadEntry.Text); //uloží poslední cestu
-                    button.Text = "Stop";
-                    BrowseBtn.IsEnabled = false;
-                    FileUploadEntry.IsEnabled = false;
                 }
             }
-            else
+            else if (!ShareIntentHelper.IntentEnabled && !File.Exists(FileUploadEntry.Text))
             {
                 await DisplayAlert("Non Existent", "Path Doesn't exist", "OK");
             }
         }
-        else if (button.Text == "Stop")
+        else if (Hostbtn.Text == "Stop")
         {
             //ukončí server
-            button.Text = "Host";
-            BrowseBtn.IsEnabled = true;
-            FileUploadEntry.IsEnabled = true;
+            UploadBtnAndEntryEnabled(true);
             ServerClass.StopServer();
         }
     }
@@ -389,20 +450,30 @@ public partial class MainPage : ContentPage
         ipPicker.ItemsSource = new List<string>();
         ipPicker.ItemsSource = ipAddresses;
     }
-    async void UploadFileDialog(object sender, EventArgs args)
+    async void BrowseBtnPressed(object sender, EventArgs args)
     {
-        //ServerClass.ConsoleEntry = ServerConsole;
-        try
+        if (!ShareIntentHelper.IntentEnabled) //normal
         {
-            var result = await FilePicker.Default.PickAsync(PickOptions.Default);
-            if (result == null) { return; }
-            FileUploadEntry.Text = result.FullPath;
+            //ServerClass.ConsoleEntry = ServerConsole;
+            try
+            {
+                var result = await FilePicker.Default.PickAsync(PickOptions.Default);
+                if (result == null) { return; }
+                FileUploadEntry.Text = result.FullPath;
 
-        }
-        catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                // The user canceled or something went wrong
+            }
+        } else //intent version
         {
-            // The user canceled or something went wrong
+            ShareIntentHelper.ClearIntentData(); //disable intent
+            IntentVersionEnabled(false);
+            FileUploadEntry.Text = ShareIntentHelper.ProcessSharedObject();
+            NCL("Share intent disabled");
         }
+        
     }
     void ClearConsole(object sender, EventArgs args)
     {

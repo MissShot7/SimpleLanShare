@@ -4,6 +4,7 @@ using Android.OS;
 using Android.Widget;
 using Android.Content.PM;
 using CrossPlatformShare;
+using Android.Database;
 
 namespace com.MissShot7.SimpleLanShare // Ensure this matches your app's package name
 {
@@ -38,29 +39,41 @@ namespace com.MissShot7.SimpleLanShare // Ensure this matches your app's package
             if (intent.GetParcelableExtra(Android.Content.Intent.ExtraStream) != null) //is file
             {
                 string filename = GetFilePathFromUri((Android.Net.Uri)intent.GetParcelableExtra(Android.Content.Intent.ExtraStream)); //convert uri to filepath
-                MiscClass.uri = (Android.Net.Uri)intent.GetParcelableExtra(Android.Content.Intent.ExtraStream);
-                //ReadBytesFromUri((Android.Net.Uri)intent.GetParcelableExtra(Android.Content.Intent.ExtraStream));
-                MiscClass.SharedIntentFileName = filename; //save file location to static class
-                //Toast.MakeText(this, filename, ToastLength.Long).Show();
-                
+                ShareIntentHelper.uri = (Android.Net.Uri)intent.GetParcelableExtra(Android.Content.Intent.ExtraStream);
+
+                ShareIntentHelper.IntentEnabled = true;
+
+                ShareIntentHelper.uribytes = ShareIntentHelper.ReadBytesFromUri();
+                ShareIntentHelper.intent = intent;
+                ShareIntentHelper.SharedIntentFileName = filename; //save file location to static class
+
+                FileInfo fileInfo = new FileInfo(filename);
+                ShareIntentHelper.finfo = FileDetails.DetailsFromInfo(fileInfo);
+
+                //Toast.MakeText(this, $"size: {ShareIntentHelper.finfo.SizeInBytes}", ToastLength.Long).Show();
+
             } else //is text or something else
             {
                 string content = intent.GetStringExtra(Android.Content.Intent.ExtraText);
-                MiscClass.SharedText = content;
+                ShareIntentHelper.SharedText = content;
                 //Toast.MakeText(this, $"content: {content}", ToastLength.Long).Show(); 
                 
             }
+            
 
             //string FileLocation = ((Android.Net.Uri)intent.GetParcelableExtra(Android.Content.Intent.ExtraStream)).ToString() ?? "none";
             /*
-            MiscClass.SharedIntentFileName = intent.GetStringExtra(Android.Content.Intent.ExtraText); //save file location to static class
-            MiscClass.FileType = intent.Type;*/
+            ShareIntentHelper.SharedIntentFileName = intent.GetStringExtra(Android.Content.Intent.ExtraText); //save file location to static class
+            ShareIntentHelper.FileType = intent.Type;*/
             //Toast.MakeText(this, $"Type: {(Android.Net.Uri)intent.GetParcelableExtra(Android.Content.Intent.ExtraStream)}", ToastLength.Long).Show();
 
             StartActivity(mainIntent);
             Finish(); // Closes the ShareActivity to prevent a blank screen
         }
+       
+
         
+
         public string GetFilePathFromUri(Android.Net.Uri uri)
         {
             string filePath = null;

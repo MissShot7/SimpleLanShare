@@ -15,7 +15,6 @@ using System.Threading;
 using System.Windows.Input;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-
 using Microsoft.Extensions.FileProviders;
 
 class ServerClass
@@ -50,15 +49,15 @@ class ServerClass
         serverIP = GetLocalIPAddress(); //lokální ip
         if (serverIP == "Connecting_error") { NCL("Connection error, ensure your wifi is on"); return false; } //chyba s připojením
 
-        
-
         if (running == true) { return false; }
-        //jestli soubor existuje
-        if (!File.Exists(specificFilePath)) { NCL($"File '{specificFilePath}' doesn't exist. Not starting"); return false; }
+        //jestli soubor existuje (a není intent)
+        if (!ShareIntentHelper.IntentEnabled && !File.Exists(specificFilePath)) { NCL($"File '{specificFilePath}' doesn't exist. Not starting"); return false; }
 
+        //start
         running = true;
-        SpecificFilePath = specificFilePath;
-        //ConsoleEntry = editor;
+        if (!ShareIntentHelper.IntentEnabled) { SpecificFilePath = specificFilePath; }
+        else {  SpecificFilePath = "intent"; }
+        
         Thread serverThread = new Thread(RunServer);
         serverThread.Start();
         return true;
@@ -167,15 +166,18 @@ class ServerClass
             {
 #if ANDROID
                 try{
+                
+                //NCL(ShareIntentHelper.uribytes.Length);
+                 writer.Write("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n");
                 writer.Flush();
-                byte[] bytes = MiscClass.ReadBytesFromUri(MiscClass.uri);
-                stream.Write(bytes, 0, bytes.Length);
-                } catch(Exception e){NCL(e.Message);}
+                stream.Write(ShareIntentHelper.uribytes, 0, ShareIntentHelper.uribytes.Length);
+                } catch(Exception e){NCL(e.Message);
+                }
 #endif
                 return;
 
                 /*
-                Android.Net.Uri uri = MiscClass.uri;
+                Android.Net.Uri uri = ShareIntentHelper.uri;
                 responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
                 writer.Write(responseHeader);
                 writer.Flush();
@@ -186,9 +188,15 @@ class ServerClass
             }
             if (fileRequested == "dsf") //download specific file
             {
+                byte[] fileBytes = null;
+                if (!ShareIntentHelper.IntentEnabled) { fileBytes = File.ReadAllBytes(SpecificFilePath); } //normal
+                else { fileBytes = ShareIntentHelper.uribytes; } //intent
 
-                byte[] fileBytes = File.ReadAllBytes(SpecificFilePath);
-                responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+                string fname = Path.GetFileName(ShareIntentHelper.IntentEnabled ? ShareIntentHelper.finfo.FullName : SpecificFilePath);
+                responseHeader = "HTTP/1.1 200 OK\r\n" +
+                            "Content-Type: text/plain\r\n" + // You can adjust the content type if needed (e.g., application/octet-stream for binary files)
+                            "Content-Disposition: attachment; filename=\"" + fname + "\"\r\n" + // specify file name
+                            "\r\n";
                 writer.Write(responseHeader);
                 writer.Flush();
                 stream.Write(fileBytes, 0, fileBytes.Length);
@@ -199,22 +207,27 @@ class ServerClass
             {
                 // Generate html
                 responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-                responseBody = SimpleHTML("Server working :)", $"Current file on host device is stored on: {SpecificFilePath} </br></br>" + 
+                string LocalFilePath;
+                if (!ShareIntentHelper.IntentEnabled) { LocalFilePath = SpecificFilePath; } //normal
+                else { LocalFilePath = ShareIntentHelper.finfo.FullName; } //intent
+                responseBody = SimpleHTML("Server working :)", $"Current file on host device is stored on: {LocalFilePath} </br></br>" + 
                     $"""<b>Available URLs:</b></br> Download link:  <a href="/dsf">{serverIP}/dsf</a> """+
                     $"""</br> FileInfo link:  <a href="/GetFileInfo">{serverIP}/GetFileInfo</a> """);
             } else if (fileRequested == "GetFileInfo") //informace o souboru
             {
-                var fileInfo = new FileInfo(SpecificFilePath);
-                var fileDetails = new
+
+                FileDetails fileDetails;
+                if (!ShareIntentHelper.IntentEnabled) //normal
                 {
-                    Name = fileInfo.Name,
-                    FullName = fileInfo.FullName,
-                    Extension = fileInfo.Extension,
-                    SizeInBytes = fileInfo.Length,
-                    CreationTime = fileInfo.CreationTime,
-                    LastAccessTime = fileInfo.LastAccessTime,
-                    LastWriteTime = fileInfo.LastWriteTime
-                };
+                    FileInfo fileInfo = new FileInfo(SpecificFilePath);
+                    fileDetails = FileDetails.DetailsFromInfo(fileInfo);
+                }
+                else //intent
+                {
+                    fileDetails = ShareIntentHelper.finfo;
+                }
+
+
                 string FIleInfoAsJSON = JsonConvert.SerializeObject(fileDetails, Formatting.Indented);
 
                 responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n";
@@ -391,3 +404,4 @@ public class MainViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
+
