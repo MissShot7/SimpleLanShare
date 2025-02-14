@@ -18,7 +18,12 @@ using System.Threading;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using CommunityToolkit.Mvvm.Messaging;
 namespace CrossPlatformShare.Pages;
+#if WINDOWS
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+#endif
 
 
 public partial class MainPage : ContentPage
@@ -65,8 +70,7 @@ public partial class MainPage : ContentPage
         //Nastaví poslední vybraný soubor
         ipPicker.SelectedItem = Preferences.Get("LastIPSelected", "");
         //SavePicker poslední hodnota
-        SavePicker.SelectedItem = Preferences.Get("SavePickerLast", "SemiAuto");
-
+        SavePicker.SelectedItem = Preferences.Get("SavePickerLast", "FullAuto");
         if (ShareIntentHelper.IntentEnabled) //Intentversion
         {
             #if ANDROID
@@ -86,7 +90,8 @@ public partial class MainPage : ContentPage
         }
         IntentVersionEnabled(ShareIntentHelper.IntentEnabled); //decides if upload menu will be intent or no
 
-        
+        //try { NCL(ShareIntentHelper.intent.Type); } catch (Exception ex) { NCL(ex.Message); }
+
     }
 
     void IntentVersionEnabled(bool enabled) //if launched from intent functionality and look is slightly modified
@@ -145,7 +150,7 @@ public partial class MainPage : ContentPage
             if (successfull)
             {
                 UploadBtnAndEntryEnabled(false);
-                if (!ShareIntentHelper.IntentEnabled)
+                if (!ShareIntentHelper.IntentEnabled && ShareIntentHelper.SharedText != ShareIntentHelper.DefaultValue)
                 {
                     Preferences.Set("LastFileUploaded", FileUploadEntry.Text); //uloží poslední cestu
                 }
@@ -349,8 +354,8 @@ public partial class MainPage : ContentPage
                 try
                 {
                     // User selects file, save to custom location
-                    fileSaverResult = await FileSaver.Default.SaveAsync(FullPath_auto, new MemoryStream(File.ReadAllBytes(savePath))); // uživatel sám vybere
-                    ConsoleDisplayPath = fileSaverResult.ToString();
+                    fileSaverResult = await FileSaver.Default.SaveAsync(Path.GetFileName(FullPath_auto), new MemoryStream(File.ReadAllBytes(savePath))); // user can choose
+                    ConsoleDisplayPath = fileSaverResult.FilePath.ToString();
                     if (fileSaverResult.IsSuccessful) { wasUnsuccessfull = false; }
 
                 }
@@ -473,8 +478,27 @@ public partial class MainPage : ContentPage
             FileUploadEntry.Text = ShareIntentHelper.ProcessSharedObject();
             NCL("Share intent disabled");
         }
-        
     }
+    // Handle the dropped file
+    public async void OnFileDropped(object sender, DropEventArgs e)
+    {
+#if WINDOWS
+    if (e.PlatformArgs is not null && e.PlatformArgs.DragEventArgs.DataView.Contains(StandardDataFormats.StorageItems))
+    {
+        var items = await e.PlatformArgs.DragEventArgs.DataView.GetStorageItemsAsync();
+        if (items.Any())
+        {
+            foreach (var item in items)
+            {
+                if (item is StorageFile file)
+                    FileUploadEntry.Text = item.Path;
+                    return;
+            }
+        }
+    }
+#endif
+    }
+
     void ClearConsole(object sender, EventArgs args)
     {
         ServerConsole.Text = string.Empty;

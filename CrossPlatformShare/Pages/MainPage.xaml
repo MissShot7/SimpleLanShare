@@ -18,11 +18,15 @@
 
     <StackLayout Padding="10" Spacing="10" HorizontalOptions="Center">
 
-        <!-- Host-->
+        <!-- Upload-->
         <Label x:Name="UploadLabel" Text="Upload:" FontAttributes="Bold" FontSize="23" />
         <StackLayout Orientation="Horizontal" Spacing="6" HorizontalOptions="Center">
             <Border >
-                <Entry x:Name="FileUploadEntry" Placeholder="Enter file location" IsSpellCheckEnabled="false" WidthRequest="280"/>
+                <Entry x:Name="FileUploadEntry" Placeholder="Enter file location" IsSpellCheckEnabled="false" WidthRequest="280">
+                    <Entry.GestureRecognizers>
+                        <DropGestureRecognizer Drop="OnFileDropped"/>
+                    </Entry.GestureRecognizers>
+                </Entry>
             </Border>
             <Button Text="Browse" x:Name="BrowseBtn" Clicked="BrowseBtnPressed" /> <!--Also server as button for stopping intent sharing-->
         </StackLayout>

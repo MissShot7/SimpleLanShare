@@ -25,16 +25,17 @@ namespace CrossPlatformShare
                     fonts.AddFont("wingding.ttf", "wingding");
                 });
 
-            builder.Services.AddMauiBlazorWebView();
+
 
 #if DEBUG
-            builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
 
             return builder.Build();
         }
         //void EndServer()
+
+
 
         static void RemoveUnderlines()
         {

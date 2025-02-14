@@ -1,14 +1,15 @@
-﻿using CommunityToolkit.Maui.Alerts;
+﻿using CommunityToolkit.Mvvm.Messaging.Messages;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Storage;
 #if ANDROID
 using Android.Content;
 using Android.Database;
+using Android.Widget;
 #endif
 public static class ShareIntentHelper
 {
-    private static string DefaultValue = "none";
+    public static readonly string DefaultValue = "none";
 
     public static string SharedIntentFileName = DefaultValue;
     public static FileDetails finfo;
@@ -21,6 +22,7 @@ public static class ShareIntentHelper
 #endif
 
     public static byte[] uribytes;
+    public static bool IntentDisplayed = true;
 
     public static string ProcessSharedObject()
     {
@@ -77,6 +79,7 @@ public static class ShareIntentHelper
             }
         }
 #endif
+        
         return null;
     }
 
